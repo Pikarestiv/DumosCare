@@ -31,7 +31,7 @@ class DispatchReminders extends Command
 
             match ($reminder->channel) {
                 'whatsapp' => $whatsApp->sendText($patient->phone, $message),
-                'email' => Mail::to("patient-{$patient->id}@pingura.test")->send(new ReminderMail($message)),
+                'email' => Mail::to("patient-{$patient->id}@dumoscare.test")->send(new ReminderMail($message)),
                 // 'sms' is deferred until the product is monetized — not implemented.
                 default => $this->warn("Unsupported reminder channel [{$reminder->channel}], skipping."),
             };

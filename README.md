@@ -1,4 +1,4 @@
-# Pingura
+# Dumos Care
 
 A WhatsApp-first remote patient monitoring PoC for a single healthcare provider
 (pharmacy, clinic, or maternity home) to track patients between visits.
@@ -32,7 +32,7 @@ php artisan storage:link
 This seeds one demo provider, an admin user, and 4 demo patients with a mix of
 program types and historical (including flagged) check-ins.
 
-**Demo admin login:** `admin@pingura.test` / `password`
+**Demo admin login:** `admin@dumoscare.test` / `password`
 
 Run the API (the frontends are configured to expect it on port 8123):
 
@@ -114,7 +114,7 @@ In `backend/.env`:
 ```
 WHATSAPP_CLOUD_API_TOKEN=<the temporary access token>
 WHATSAPP_PHONE_NUMBER_ID=<the phone number id>
-WHATSAPP_VERIFY_TOKEN=<any string you choose, e.g. pingura-verify>
+WHATSAPP_VERIFY_TOKEN=<any string you choose, e.g. dumos-care-verify>
 ```
 
 Also update at least one seeded patient's `phone` column to match your real
@@ -169,15 +169,15 @@ server itself — only PHP to run the already-built Laravel app.
 
 | Subdomain | Serves | cPanel document root |
 |---|---|---|
-| `care.yourdomain.com` | Admin dashboard (static build) | `/home/USER/pingura-admin-dashboard` |
-| `api.care.yourdomain.com` | Laravel API + WhatsApp webhook | `/home/USER/pingura-backend/public` |
-| `report.care.yourdomain.com` | Patient report page (static build) | `/home/USER/pingura-patient-report` |
+| `care.yourdomain.com` | Admin dashboard (static build) | `/home/USER/dumos-care-admin-dashboard` |
+| `api.care.yourdomain.com` | Laravel API + WhatsApp webhook | `/home/USER/dumos-care-backend/public` |
+| `report.care.yourdomain.com` | Patient report page (static build) | `/home/USER/dumos-care-patient-report` |
 
 ### One-time cPanel setup
 
 1. **Create the 3 subdomains** (cPanel > Domains > Create A New Domain, or
    Subdomains). For `api.care.yourdomain.com`, set the document root directly
-   to `pingura-backend/public` (a path outside `public_html`, or anywhere you
+   to `dumos-care-backend/public` (a path outside `public_html`, or anywhere you
    like — cPanel lets you type a custom path at creation time). This keeps
    Laravel's app code and `.env` out of any web-accessible folder.
 2. **Enable AutoSSL** for all 3 (usually automatic within a few minutes of
@@ -190,10 +190,10 @@ server itself — only PHP to run the already-built Laravel app.
    MultiPHP Manager, and confirm the `gd` extension is enabled under MultiPHP
    INI Editor (needed for the wound-photo upload validation).
 5. **Add your GitHub Actions deploy key**: generate an SSH key pair locally
-   (`ssh-keygen -t ed25519 -C "github-actions-pingura"`, no passphrase), add
+   (`ssh-keygen -t ed25519 -C "github-actions-dumos-care"`, no passphrase), add
    the *public* key via cPanel > SSH Access > Manage SSH Keys > Import Key,
    then Authorize it. Keep the *private* key for the GitHub secret below.
-6. **Create `/home/USER/pingura-backend/.env` by hand over SSH**, based on
+6. **Create `/home/USER/dumos-care-backend/.env` by hand over SSH**, based on
    `backend/.env.production.example` in this repo — fill in the DB
    credentials from step 3, generate `APP_KEY` with
    `php artisan key:generate --show` (run locally, paste the output in), and
@@ -201,7 +201,7 @@ server itself — only PHP to run the already-built Laravel app.
    excluded from the deploy sync, so it's only ever touched by you over SSH.
 7. **Add a cron job** (cPanel > Cron Jobs) so reminders actually get sent:
    ```
-   * * * * * /usr/local/bin/php /home/USER/pingura-backend/artisan schedule:run >> /dev/null 2>&1
+   * * * * * /usr/local/bin/php /home/USER/dumos-care-backend/artisan schedule:run >> /dev/null 2>&1
    ```
    (confirm the PHP binary path for your account — cPanel's Cron Jobs page
    usually suggests it, e.g. `/usr/local/bin/ea-php83`).
@@ -221,9 +221,9 @@ server itself — only PHP to run the already-built Laravel app.
 | `DEPLOY_SSH_PORT` | SSH port from cPanel > SSH Access (often `21098` on Namecheap, not 22) |
 | `DEPLOY_SSH_USER` | your cPanel username |
 | `DEPLOY_SSH_KEY` | the *private* key from step 5 above (full contents, including header/footer lines) |
-| `DEPLOY_BACKEND_PATH` | `/home/USER/pingura-backend` |
-| `DEPLOY_ADMIN_PATH` | `/home/USER/pingura-admin-dashboard` |
-| `DEPLOY_REPORT_PATH` | `/home/USER/pingura-patient-report` |
+| `DEPLOY_BACKEND_PATH` | `/home/USER/dumos-care-backend` |
+| `DEPLOY_ADMIN_PATH` | `/home/USER/dumos-care-admin-dashboard` |
+| `DEPLOY_REPORT_PATH` | `/home/USER/dumos-care-patient-report` |
 
 **Settings > Secrets and variables > Actions > Variables** (these get baked
 into the React builds at compile time, so they're not secret, just public

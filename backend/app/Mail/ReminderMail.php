@@ -19,7 +19,7 @@ class ReminderMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Pingura check-in reminder',
+            subject: 'Dumos Care check-in reminder',
         );
     }
 

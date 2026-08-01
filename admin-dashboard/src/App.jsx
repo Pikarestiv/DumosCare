@@ -19,7 +19,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center text-slate-500">
-        Loading Pingura...
+        Loading Dumos Care...
       </div>
     )
   }

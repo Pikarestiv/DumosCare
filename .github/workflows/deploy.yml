@@ -1,4 +1,4 @@
-name: Deploy Pingura to Namecheap
+name: Deploy Dumos Care to Namecheap
 
 on:
   push:

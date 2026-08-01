@@ -21,7 +21,7 @@ export default function Layout({ children }) {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
             <Activity className="h-4.5 w-4.5 text-white" size={18} />
           </div>
-          <span className="text-lg font-semibold text-slate-900">Pingura</span>
+          <span className="text-lg font-semibold text-slate-900">Dumos Care</span>
         </div>
 
         <nav className="flex flex-1 flex-col gap-1 p-3">

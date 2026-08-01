@@ -3,7 +3,7 @@ import { Activity } from 'lucide-react'
 import { useLogin } from '../lib/hooks'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('admin@pingura.test')
+  const [email, setEmail] = useState('admin@dumoscare.test')
   const [password, setPassword] = useState('password')
   const login = useLogin()
 
@@ -19,7 +19,7 @@ export default function LoginPage() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600">
             <Activity className="text-white" size={20} />
           </div>
-          <span className="text-xl font-semibold text-slate-900">Pingura</span>
+          <span className="text-xl font-semibold text-slate-900">Dumos Care</span>
         </div>
         <h1 className="mb-1 text-lg font-semibold text-slate-900">Provider sign in</h1>
         <p className="mb-6 text-sm text-slate-500">Remote patient monitoring dashboard</p>
@@ -59,7 +59,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-4 text-xs text-slate-400">Demo: admin@pingura.test / password</p>
+        <p className="mt-4 text-xs text-slate-400">Demo: admin@dumoscare.test / password</p>
       </div>
     </div>
   )

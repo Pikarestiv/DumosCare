@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         $admin = User::create([
             'name' => 'Amara Okafor',
-            'email' => 'admin@pingura.test',
+            'email' => 'admin@dumoscare.test',
             'password' => Hash::make('password'),
             'provider_id' => $provider->id,
         ]);
@@ -166,6 +166,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->command->info('Seeded provider, 4 patients, programs, check-ins, and reminders.');
-        $this->command->info('Admin login: admin@pingura.test / password');
+        $this->command->info('Admin login: admin@dumoscare.test / password');
     }
 }
