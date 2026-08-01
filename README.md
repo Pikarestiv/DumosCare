@@ -157,6 +157,83 @@ number:
 You should get an automatic "Got it, thanks!" reply, and the check-in will
 appear on the patient's detail page in the admin dashboard.
 
+## Production deployment (Namecheap shared hosting, Stellar Business)
+
+Deployment is automated via `.github/workflows/deploy.yml`: on every push to
+`main`, GitHub Actions builds the Laravel app (`composer install --no-dev`)
+and both React apps (`npm run build`), then `rsync`s the finished artifacts
+over SSH to the cPanel account. No Node.js or Composer is required on the
+server itself — only PHP to run the already-built Laravel app.
+
+### Target layout
+
+| Subdomain | Serves | cPanel document root |
+|---|---|---|
+| `care.yourdomain.com` | Admin dashboard (static build) | `/home/USER/pingura-admin-dashboard` |
+| `api.care.yourdomain.com` | Laravel API + WhatsApp webhook | `/home/USER/pingura-backend/public` |
+| `report.care.yourdomain.com` | Patient report page (static build) | `/home/USER/pingura-patient-report` |
+
+### One-time cPanel setup
+
+1. **Create the 3 subdomains** (cPanel > Domains > Create A New Domain, or
+   Subdomains). For `api.care.yourdomain.com`, set the document root directly
+   to `pingura-backend/public` (a path outside `public_html`, or anywhere you
+   like — cPanel lets you type a custom path at creation time). This keeps
+   Laravel's app code and `.env` out of any web-accessible folder.
+2. **Enable AutoSSL** for all 3 (usually automatic within a few minutes of
+   creating the subdomain — check cPanel > SSL/TLS Status).
+3. **Create a MySQL database** via cPanel > MySQL Database Wizard: a database,
+   a user, and grant that user ALL PRIVILEGES on it. Note the full (prefixed)
+   database name and username.
+4. **Set the PHP version** for `api.care.yourdomain.com` to 8.2+ (ideally the
+   same major/minor as `backend/composer.json` requires) via cPanel >
+   MultiPHP Manager, and confirm the `gd` extension is enabled under MultiPHP
+   INI Editor (needed for the wound-photo upload validation).
+5. **Add your GitHub Actions deploy key**: generate an SSH key pair locally
+   (`ssh-keygen -t ed25519 -C "github-actions-pingura"`, no passphrase), add
+   the *public* key via cPanel > SSH Access > Manage SSH Keys > Import Key,
+   then Authorize it. Keep the *private* key for the GitHub secret below.
+6. **Create `/home/USER/pingura-backend/.env` by hand over SSH**, based on
+   `backend/.env.production.example` in this repo — fill in the DB
+   credentials from step 3, generate `APP_KEY` with
+   `php artisan key:generate --show` (run locally, paste the output in), and
+   set `SESSION_DOMAIN` to `.care.yourdomain.com`. This file is deliberately
+   excluded from the deploy sync, so it's only ever touched by you over SSH.
+7. **Add a cron job** (cPanel > Cron Jobs) so reminders actually get sent:
+   ```
+   * * * * * /usr/local/bin/php /home/USER/pingura-backend/artisan schedule:run >> /dev/null 2>&1
+   ```
+   (confirm the PHP binary path for your account — cPanel's Cron Jobs page
+   usually suggests it, e.g. `/usr/local/bin/ea-php83`).
+8. **First deploy**: push to `main` (or run the workflow manually from the
+   Actions tab), then confirm `php artisan migrate --force` ran cleanly by
+   checking the Actions log. The demo seeder is intentionally **not** run in
+   production — seed manually over SSH only if you actually want the demo
+   data live: `php artisan db:seed`.
+
+### GitHub repo configuration
+
+**Settings > Secrets and variables > Actions > Secrets:**
+
+| Secret | Value |
+|---|---|
+| `DEPLOY_SSH_HOST` | your server hostname, e.g. `server123.web-hosting.com` |
+| `DEPLOY_SSH_PORT` | SSH port from cPanel > SSH Access (often `21098` on Namecheap, not 22) |
+| `DEPLOY_SSH_USER` | your cPanel username |
+| `DEPLOY_SSH_KEY` | the *private* key from step 5 above (full contents, including header/footer lines) |
+| `DEPLOY_BACKEND_PATH` | `/home/USER/pingura-backend` |
+| `DEPLOY_ADMIN_PATH` | `/home/USER/pingura-admin-dashboard` |
+| `DEPLOY_REPORT_PATH` | `/home/USER/pingura-patient-report` |
+
+**Settings > Secrets and variables > Actions > Variables** (these get baked
+into the React builds at compile time, so they're not secret, just public
+URLs):
+
+| Variable | Value |
+|---|---|
+| `VITE_API_URL` | `https://api.care.yourdomain.com` |
+| `VITE_PATIENT_REPORT_URL` | `https://report.care.yourdomain.com` |
+
 ## Notes on scope
 
 - **SMS reminders are not implemented.** The `sms` value exists in the

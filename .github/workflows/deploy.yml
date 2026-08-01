@@ -1,0 +1,98 @@
+name: Deploy Pingura to Namecheap
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------- Build backend (Laravel) ----------
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, fileinfo, gd, bcmath, ctype, tokenizer, xml
+          coverage: none
+
+      - name: Install Composer dependencies
+        working-directory: backend
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # ---------- Build admin dashboard ----------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Write admin-dashboard build env
+        working-directory: admin-dashboard
+        run: |
+          echo "VITE_API_URL=${{ vars.VITE_API_URL }}" > .env
+          echo "VITE_PATIENT_REPORT_URL=${{ vars.VITE_PATIENT_REPORT_URL }}" >> .env
+
+      - name: Build admin dashboard
+        working-directory: admin-dashboard
+        run: |
+          npm ci
+          npm run build
+
+      # ---------- Build patient report page ----------
+      - name: Write patient-report build env
+        working-directory: patient-report
+        run: echo "VITE_API_URL=${{ vars.VITE_API_URL }}" > .env
+
+      - name: Build patient report page
+        working-directory: patient-report
+        run: |
+          npm ci
+          npm run build
+
+      # ---------- Deploy over SSH/rsync ----------
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Add remote host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy backend (Laravel)
+        run: |
+          rsync -az --delete \
+            -e "ssh -p ${{ secrets.DEPLOY_SSH_PORT }}" \
+            --exclude='.env' \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='database/database.sqlite' \
+            --exclude='storage/app/public/*' \
+            --exclude='storage/framework/cache/data/*' \
+            --exclude='storage/framework/sessions/*' \
+            --exclude='storage/framework/views/*' \
+            --exclude='storage/logs/*' \
+            backend/ ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}:${{ secrets.DEPLOY_BACKEND_PATH }}/
+
+      - name: Run post-deploy backend commands
+        run: |
+          ssh -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }} \
+            "cd ${{ secrets.DEPLOY_BACKEND_PATH }} && php artisan migrate --force && php artisan storage:link"
+
+      - name: Deploy admin dashboard
+        run: |
+          rsync -az --delete \
+            -e "ssh -p ${{ secrets.DEPLOY_SSH_PORT }}" \
+            admin-dashboard/dist/ ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}:${{ secrets.DEPLOY_ADMIN_PATH }}/
+
+      - name: Deploy patient report page
+        run: |
+          rsync -az --delete \
+            -e "ssh -p ${{ secrets.DEPLOY_SSH_PORT }}" \
+            patient-report/dist/ ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}:${{ secrets.DEPLOY_REPORT_PATH }}/
