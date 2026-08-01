@@ -169,14 +169,14 @@ server itself — only PHP to run the already-built Laravel app.
 
 | Subdomain | Serves | cPanel document root |
 |---|---|---|
-| `care.yourdomain.com` | Admin dashboard (static build) | `/home/USER/dumos-care-admin-dashboard` |
-| `api.care.yourdomain.com` | Laravel API + WhatsApp webhook | `/home/USER/dumos-care-backend/public` |
-| `report.care.yourdomain.com` | Patient report page (static build) | `/home/USER/dumos-care-patient-report` |
+| `care.dumosrx.com` | Admin dashboard (static build) | `/home/USER/dumos-care-admin-dashboard` |
+| `api.care.dumosrx.com` | Laravel API + WhatsApp webhook | `/home/USER/dumos-care-backend/public` |
+| `report.care.dumosrx.com` | Patient report page (static build) | `/home/USER/dumos-care-patient-report` |
 
 ### One-time cPanel setup
 
 1. **Create the 3 subdomains** (cPanel > Domains > Create A New Domain, or
-   Subdomains). For `api.care.yourdomain.com`, set the document root directly
+   Subdomains). For `api.care.dumosrx.com`, set the document root directly
    to `dumos-care-backend/public` (a path outside `public_html`, or anywhere you
    like — cPanel lets you type a custom path at creation time). This keeps
    Laravel's app code and `.env` out of any web-accessible folder.
@@ -185,7 +185,7 @@ server itself — only PHP to run the already-built Laravel app.
 3. **Create a MySQL database** via cPanel > MySQL Database Wizard: a database,
    a user, and grant that user ALL PRIVILEGES on it. Note the full (prefixed)
    database name and username.
-4. **Set the PHP version** for `api.care.yourdomain.com` to 8.2+ (ideally the
+4. **Set the PHP version** for `api.care.dumosrx.com` to 8.2+ (ideally the
    same major/minor as `backend/composer.json` requires) via cPanel >
    MultiPHP Manager, and confirm the `gd` extension is enabled under MultiPHP
    INI Editor (needed for the wound-photo upload validation).
@@ -197,7 +197,7 @@ server itself — only PHP to run the already-built Laravel app.
    `backend/.env.production.example` in this repo — fill in the DB
    credentials from step 3, generate `APP_KEY` with
    `php artisan key:generate --show` (run locally, paste the output in), and
-   set `SESSION_DOMAIN` to `.care.yourdomain.com`. This file is deliberately
+   set `SESSION_DOMAIN` to `.care.dumosrx.com`. This file is deliberately
    excluded from the deploy sync, so it's only ever touched by you over SSH.
 7. **Add a cron job** (cPanel > Cron Jobs) so reminders actually get sent:
    ```
@@ -231,8 +231,8 @@ URLs):
 
 | Variable | Value |
 |---|---|
-| `VITE_API_URL` | `https://api.care.yourdomain.com` |
-| `VITE_PATIENT_REPORT_URL` | `https://report.care.yourdomain.com` |
+| `VITE_API_URL` | `https://api.care.dumosrx.com` |
+| `VITE_PATIENT_REPORT_URL` | `https://report.care.dumosrx.com` |
 
 ## Notes on scope
 
