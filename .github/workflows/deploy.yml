@@ -83,7 +83,7 @@ jobs:
       - name: Run post-deploy backend commands
         run: |
           ssh -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }} \
-            "cd ${{ secrets.DEPLOY_BACKEND_PATH }} && php artisan migrate --force && php artisan storage:link"
+            "cd ${{ secrets.DEPLOY_BACKEND_PATH }} && ${{ secrets.DEPLOY_PHP_BIN }} artisan migrate --force && ${{ secrets.DEPLOY_PHP_BIN }} artisan storage:link"
 
       - name: Deploy admin dashboard
         run: |

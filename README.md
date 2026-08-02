@@ -224,6 +224,7 @@ server itself — only PHP to run the already-built Laravel app.
 | `DEPLOY_BACKEND_PATH` | `/home/USER/dumos-care-backend` |
 | `DEPLOY_ADMIN_PATH` | `/home/USER/dumos-care-admin-dashboard` |
 | `DEPLOY_REPORT_PATH` | `/home/USER/dumos-care-patient-report` |
+| `DEPLOY_PHP_BIN` | Full path to a PHP 8.3+ CLI binary on the server, e.g. `/opt/alt/php83/usr/bin/php`. The bare `php` in an SSH shell is often a much older system default (cPanel's MultiPHP Manager only affects web requests, not SSH) — check `ls /opt/alt/` or `ls /opt/cpanel/` over SSH to find the right one for your account. |
 
 **Settings > Secrets and variables > Actions > Variables** (these get baked
 into the React builds at compile time, so they're not secret, just public
