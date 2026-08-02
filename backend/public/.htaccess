@@ -23,3 +23,9 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Force PHP 8.3 via CloudLinux's Alt-PHP/LSAPI selector. Namecheap's
+# MultiPHP Manager doesn't reliably apply to this account's stack --
+# without this, requests silently fall back to the account's older
+# default PHP and Composer's platform check fails at runtime.
+AddHandler application/x-lsphp83 .php
