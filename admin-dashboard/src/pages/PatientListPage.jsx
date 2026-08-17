@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, Plus, UserCheck, Users } from 'lucide-react'
 import { useDashboardSummary, usePatients } from '../lib/hooks'
 import EnrollPatientModal from '../components/EnrollPatientModal'
@@ -24,6 +24,7 @@ function StatTile({ icon: Icon, label, value, tone }) {
 }
 
 export default function PatientListPage() {
+  const navigate = useNavigate()
   const { data: patients, isLoading } = usePatients()
   const { data: summary } = useDashboardSummary()
   const [showEnroll, setShowEnroll] = useState(false)
@@ -72,11 +73,13 @@ export default function PatientListPage() {
               </tr>
             )}
             {patients?.map((p) => (
-              <tr key={p.id} className="hover:bg-slate-50">
+              <tr
+                key={p.id}
+                onClick={() => navigate(`/patients/${p.id}`)}
+                className="cursor-pointer hover:bg-slate-50"
+              >
                 <td className="px-4 py-3">
-                  <Link to={`/patients/${p.id}`} className="font-medium text-slate-900 hover:text-emerald-700">
-                    {p.name}
-                  </Link>
+                  <span className="font-medium text-slate-900">{p.name}</span>
                 </td>
                 <td className="px-4 py-3 text-slate-600">{p.phone}</td>
                 <td className="px-4 py-3">
