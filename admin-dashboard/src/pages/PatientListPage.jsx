@@ -3,20 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, Plus, UserCheck, Users } from 'lucide-react'
 import { useDashboardSummary, usePatients } from '../lib/hooks'
 import EnrollPatientModal from '../components/EnrollPatientModal'
+import { avatarColor, initials, programMeta } from '../lib/programMeta'
 
-const PROGRAM_LABELS = {
-  blood_pressure: 'Blood pressure',
-  medication_adherence: 'Medication',
-  wound_care: 'Wound care',
-  general_checkin: 'Check-in',
-}
-
-function StatTile({ icon: Icon, label, value, tone }) {
+function StatTile({ icon: Icon, label, value, chip }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <div className="flex items-center gap-2 text-slate-500">
-        <Icon size={16} className={tone} />
-        <span className="text-sm font-medium">{label}</span>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-2.5">
+        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${chip}`}>
+          <Icon size={16} />
+        </div>
+        <span className="text-sm font-medium text-slate-500">{label}</span>
       </div>
       <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
     </div>
@@ -47,13 +43,13 @@ export default function PatientListPage() {
 
       {summary && (
         <div className="mb-6 grid grid-cols-3 gap-4">
-          <StatTile icon={UserCheck} label="Active patients" value={summary.active_patients} tone="text-emerald-600" />
-          <StatTile icon={AlertTriangle} label="Flagged today" value={summary.flagged_check_ins_today} tone="text-amber-600" />
-          <StatTile icon={Users} label="Overdue reminders" value={summary.overdue_reminders} tone="text-sky-600" />
+          <StatTile icon={UserCheck} label="Active patients" value={summary.active_patients} chip="bg-emerald-50 text-emerald-600" />
+          <StatTile icon={AlertTriangle} label="Flagged today" value={summary.flagged_check_ins_today} chip="bg-amber-50 text-amber-600" />
+          <StatTile icon={Users} label="Overdue reminders" value={summary.overdue_reminders} chip="bg-sky-50 text-sky-600" />
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
@@ -76,10 +72,17 @@ export default function PatientListPage() {
               <tr
                 key={p.id}
                 onClick={() => navigate(`/patients/${p.id}`)}
-                className="cursor-pointer hover:bg-slate-50"
+                className="cursor-pointer transition-colors hover:bg-slate-50"
               >
                 <td className="px-4 py-3">
-                  <span className="font-medium text-slate-900">{p.name}</span>
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${avatarColor(p.name)}`}
+                    >
+                      {initials(p.name)}
+                    </div>
+                    <span className="font-medium text-slate-900">{p.name}</span>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-slate-600">{p.phone}</td>
                 <td className="px-4 py-3">
@@ -88,9 +91,9 @@ export default function PatientListPage() {
                     {p.active_programs.map((type) => (
                       <span
                         key={type}
-                        className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${programMeta(type).pill}`}
                       >
-                        {PROGRAM_LABELS[type] || type}
+                        {programMeta(type).shortLabel}
                       </span>
                     ))}
                   </div>

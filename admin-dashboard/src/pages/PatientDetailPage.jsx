@@ -4,13 +4,7 @@ import { AlertTriangle, ArrowLeft, Copy, Pause, Play, Plus } from 'lucide-react'
 import { usePatient, useCreateProgram, useUpdateProgram } from '../lib/hooks'
 import BpTrendChart from '../components/BpTrendChart'
 import ReminderForm from '../components/ReminderForm'
-
-const PROGRAM_LABELS = {
-  blood_pressure: 'Blood pressure',
-  medication_adherence: 'Medication adherence',
-  wound_care: 'Wound care',
-  general_checkin: 'General check-in',
-}
+import { avatarColor, initials, programMeta, PROGRAM_META } from '../lib/programMeta'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8123'
 const REPORT_URL = import.meta.env.VITE_PATIENT_REPORT_URL || 'http://localhost:5174'
@@ -27,18 +21,25 @@ function describeCheckIn(checkIn) {
 function ProgramSection({ patient, program }) {
   const updateProgram = useUpdateProgram(patient.id)
   const checkIns = program.check_ins || []
+  const meta = programMeta(program.type)
+  const Icon = meta.icon
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-slate-900">{PROGRAM_LABELS[program.type] || program.type}</h3>
-          {program.type === 'medication_adherence' && program.config?.medication && (
-            <p className="text-xs text-slate-500">{program.config.medication}</p>
-          )}
-          {program.type === 'wound_care' && program.config?.site && (
-            <p className="text-xs text-slate-500">{program.config.site}</p>
-          )}
+        <div className="flex items-center gap-3">
+          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${meta.chip}`}>
+            <Icon size={17} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-900">{meta.label}</h3>
+            {program.type === 'medication_adherence' && program.config?.medication && (
+              <p className="text-xs text-slate-500">{program.config.medication}</p>
+            )}
+            {program.type === 'wound_care' && program.config?.site && (
+              <p className="text-xs text-slate-500">{program.config.site}</p>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -99,7 +100,7 @@ function ProgramSection({ patient, program }) {
         {checkIns.slice(0, 6).map((c) => (
           <div key={c.id} className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
-              {c.flagged && <AlertTriangle size={13} className="text-red-600" />}
+              {c.flagged ? <AlertTriangle size={13} className="text-red-600" /> : <Icon size={13} className="text-slate-300" />}
               <span className={c.flagged ? 'font-medium text-red-700' : 'text-slate-700'}>{describeCheckIn(c)}</span>
               <span className="text-xs text-slate-400">via {c.source}</span>
             </div>
@@ -125,9 +126,9 @@ function AddProgramForm({ patientId, onDone }) {
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-4">
       <select value={type} onChange={(e) => setType(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm">
-        {Object.entries(PROGRAM_LABELS).map(([value, label]) => (
+        {Object.entries(PROGRAM_META).map(([value, meta]) => (
           <option key={value} value={value}>
-            {label}
+            {meta.label}
           </option>
         ))}
       </select>
@@ -157,9 +158,16 @@ export default function PatientDetailPage() {
       </Link>
 
       <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">{patient.name}</h1>
-          <p className="text-sm text-slate-500">{patient.phone}</p>
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${avatarColor(patient.name)}`}
+          >
+            {initials(patient.name)}
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-slate-900">{patient.name}</h1>
+            <p className="text-sm text-slate-500">{patient.phone}</p>
+          </div>
         </div>
         <button
           onClick={() => {

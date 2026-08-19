@@ -1,8 +1,8 @@
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
   Legend,
-  Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -36,9 +36,19 @@ export default function BpTrendChart({ checkIns, config }) {
   const diaHigh = config?.target_diastolic_high ?? 90
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={data} margin={{ top: 8, right: 16, left: -12, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 16, left: -12, bottom: 0 }}>
+          <defs>
+            <linearGradient id="systolicFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={SYSTOLIC_COLOR} stopOpacity={0.18} />
+              <stop offset="95%" stopColor={SYSTOLIC_COLOR} stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="diastolicFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={DIASTOLIC_COLOR} stopOpacity={0.18} />
+              <stop offset="95%" stopColor={DIASTOLIC_COLOR} stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={{ stroke: '#e5e7eb' }} tickLine={false} />
           <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} domain={[40, 'dataMax + 10']} />
@@ -53,9 +63,23 @@ export default function BpTrendChart({ checkIns, config }) {
           />
           <ReferenceLine y={sysHigh} stroke={SYSTOLIC_COLOR} strokeDasharray="4 4" strokeOpacity={0.4} />
           <ReferenceLine y={diaHigh} stroke={DIASTOLIC_COLOR} strokeDasharray="4 4" strokeOpacity={0.4} />
-          <Line type="monotone" dataKey="systolic" stroke={SYSTOLIC_COLOR} strokeWidth={2} dot={{ r: 3 }} />
-          <Line type="monotone" dataKey="diastolic" stroke={DIASTOLIC_COLOR} strokeWidth={2} dot={{ r: 3 }} />
-        </LineChart>
+          <Area
+            type="monotone"
+            dataKey="systolic"
+            stroke={SYSTOLIC_COLOR}
+            strokeWidth={2}
+            fill="url(#systolicFill)"
+            dot={{ r: 3 }}
+          />
+          <Area
+            type="monotone"
+            dataKey="diastolic"
+            stroke={DIASTOLIC_COLOR}
+            strokeWidth={2}
+            fill="url(#diastolicFill)"
+            dot={{ r: 3 }}
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   )
