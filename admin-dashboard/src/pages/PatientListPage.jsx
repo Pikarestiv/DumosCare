@@ -4,6 +4,7 @@ import { AlertTriangle, Plus, UserCheck, Users } from 'lucide-react'
 import { useDashboardSummary, usePatients } from '../lib/hooks'
 import EnrollPatientModal from '../components/EnrollPatientModal'
 import { avatarColor, initials, programMeta } from '../lib/programMeta'
+import Sparkline from '../components/Sparkline'
 
 function StatTile({ icon: Icon, label, value, chip }) {
   return (
@@ -30,7 +31,7 @@ export default function PatientListPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Patients</h1>
-          <p className="text-sm text-slate-500">Everyone enrolled in a monitoring program.</p>
+          <p className="text-sm text-slate-500">Everyone enrolled in a monitoring program, patients needing attention first.</p>
         </div>
         <button
           onClick={() => setShowEnroll(true)}
@@ -56,6 +57,7 @@ export default function PatientListPage() {
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Phone</th>
               <th className="px-4 py-3 font-medium">Active programs</th>
+              <th className="px-4 py-3 font-medium">Activity (14d)</th>
               <th className="px-4 py-3 font-medium">Last check-in</th>
               <th className="px-4 py-3 font-medium">Flagged</th>
             </tr>
@@ -63,7 +65,7 @@ export default function PatientListPage() {
           <tbody className="divide-y divide-slate-100">
             {isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
                   Loading patients...
                 </td>
               </tr>
@@ -72,7 +74,9 @@ export default function PatientListPage() {
               <tr
                 key={p.id}
                 onClick={() => navigate(`/patients/${p.id}`)}
-                className="cursor-pointer transition-colors hover:bg-slate-50"
+                className={`cursor-pointer transition-colors hover:bg-slate-50 ${
+                  p.flagged_count > 0 ? 'border-l-2 border-l-red-400' : 'border-l-2 border-l-transparent'
+                }`}
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
@@ -97,6 +101,16 @@ export default function PatientListPage() {
                       </span>
                     ))}
                   </div>
+                </td>
+                <td className="px-4 py-3">
+                  {p.activity_sparkline?.some((v) => v > 0) ? (
+                    <Sparkline
+                      values={p.activity_sparkline}
+                      activeBarClassName={p.flagged_count > 0 ? 'bg-red-400' : 'bg-emerald-500'}
+                    />
+                  ) : (
+                    <span className="text-slate-300">No activity</span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-slate-600">
                   {p.last_check_in_at ? new Date(p.last_check_in_at).toLocaleDateString() : '—'}

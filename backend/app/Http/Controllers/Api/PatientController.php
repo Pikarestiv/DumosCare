@@ -15,14 +15,33 @@ class PatientController extends Controller
             ->with(['programs' => fn ($q) => $q->where('status', 'active')])
             ->get()
             ->map(function (Patient $patient) {
-                $lastCheckIn = \App\Models\CheckIn::whereIn('program_id', $patient->programs->pluck('id'))
+                $programIds = $patient->programs->pluck('id');
+
+                $lastCheckIn = \App\Models\CheckIn::whereIn('program_id', $programIds)
                     ->latest()
                     ->first();
 
-                $flaggedCount = \App\Models\CheckIn::whereIn(
-                    'program_id',
-                    $patient->programs()->pluck('id')
-                )->where('flagged', true)->count();
+                $flaggedCount = \App\Models\CheckIn::whereIn('program_id', $programIds)
+                    ->where('flagged', true)
+                    ->count();
+
+                $lastFlaggedAt = \App\Models\CheckIn::whereIn('program_id', $programIds)
+                    ->where('flagged', true)
+                    ->latest()
+                    ->value('created_at');
+
+                $since = now()->subDays(13)->startOfDay();
+                $dailyCounts = \App\Models\CheckIn::whereIn('program_id', $programIds)
+                    ->where('created_at', '>=', $since)
+                    ->get()
+                    ->groupBy(fn ($c) => $c->created_at->toDateString())
+                    ->map->count();
+
+                $activitySparkline = collect(range(0, 13))->map(function ($daysAgo) use ($dailyCounts) {
+                    $date = now()->subDays(13 - $daysAgo)->toDateString();
+
+                    return $dailyCounts->get($date, 0);
+                })->values();
 
                 return [
                     'id' => $patient->id,
@@ -32,8 +51,12 @@ class PatientController extends Controller
                     'active_programs' => $patient->programs->pluck('type'),
                     'last_check_in_at' => $lastCheckIn?->created_at,
                     'flagged_count' => $flaggedCount,
+                    'last_flagged_at' => $lastFlaggedAt,
+                    'activity_sparkline' => $activitySparkline,
                 ];
-            });
+            })
+            ->sortByDesc(fn ($p) => [$p['flagged_count'] > 0, $p['last_flagged_at'] ?? $p['last_check_in_at'] ?? ''])
+            ->values();
 
         return response()->json($patients);
     }
