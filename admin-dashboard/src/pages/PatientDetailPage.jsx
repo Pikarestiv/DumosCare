@@ -5,18 +5,10 @@ import { usePatient, useCreateProgram, useUpdateProgram } from '../lib/hooks'
 import BpTrendChart from '../components/BpTrendChart'
 import ReminderForm from '../components/ReminderForm'
 import { avatarColor, initials, programMeta, PROGRAM_META } from '../lib/programMeta'
+import { describeCheckIn } from '../lib/checkIns'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8123'
 const REPORT_URL = import.meta.env.VITE_PATIENT_REPORT_URL || 'http://localhost:5174'
-
-function describeCheckIn(checkIn) {
-  const d = checkIn.structured_data || {}
-  if ('systolic' in d) return `BP ${d.systolic}/${d.diastolic} mmHg`
-  if ('taken' in d) return d.taken ? 'Medication taken' : 'Medication missed'
-  if (d.note) return d.note
-  if (d.caption) return d.caption
-  return 'Check-in received'
-}
 
 function ProgramSection({ patient, program }) {
   const updateProgram = useUpdateProgram(patient.id)

@@ -29,6 +29,7 @@ Route::get('/user', function (Request $request) {
 // Admin API (Sanctum-protected).
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('/dashboard/analytics', [DashboardController::class, 'analytics']);
 
     Route::get('/check-ins', [CheckInController::class, 'index']);
 
@@ -39,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/programs/{program}', [MonitoringProgramController::class, 'update']);
     Route::delete('/programs/{program}', [MonitoringProgramController::class, 'destroy']);
 
+    Route::get('/reminders', [ReminderController::class, 'index']);
     Route::post('/programs/{program}/reminders', [ReminderController::class, 'store']);
     Route::patch('/reminders/{reminder}', [ReminderController::class, 'update']);
     Route::delete('/reminders/{reminder}', [ReminderController::class, 'destroy']);

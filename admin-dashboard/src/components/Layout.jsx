@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Activity, AlertTriangle, LogOut, Users } from 'lucide-react'
+import { Activity, AlertTriangle, Bell, FileBarChart, LayoutDashboard, LogOut, Radio, Users } from 'lucide-react'
 import { useDashboardSummary, useLogout } from '../lib/hooks'
 import { useUiStore } from '../store/uiStore'
 import { avatarColor, initials } from '../lib/programMeta'
@@ -36,6 +36,12 @@ export default function Layout({ children }) {
 
         <nav className="flex flex-1 flex-col gap-1 p-3">
           <span className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Menu</span>
+          <NavLink to="/overview" className={navItemClass}>
+            <span className="flex items-center gap-2.5">
+              <LayoutDashboard size={17} />
+              Overview
+            </span>
+          </NavLink>
           <NavLink to="/" end className={navItemClass}>
             {({ isActive }) => (
               <>
@@ -49,6 +55,12 @@ export default function Layout({ children }) {
               </>
             )}
           </NavLink>
+          <NavLink to="/activity" className={navItemClass}>
+            <span className="flex items-center gap-2.5">
+              <Radio size={17} />
+              Activity
+            </span>
+          </NavLink>
           <NavLink to="/flagged" className={navItemClass}>
             <span className="flex items-center gap-2.5">
               <AlertTriangle size={17} />
@@ -59,6 +71,31 @@ export default function Layout({ children }) {
                 {summary.flagged_check_ins_today}
               </span>
             )}
+          </NavLink>
+          <NavLink to="/reminders" className={navItemClass}>
+            {({ isActive }) => (
+              <>
+                <span className="flex items-center gap-2.5">
+                  <Bell size={17} />
+                  Reminders
+                </span>
+                {summary?.overdue_reminders > 0 && (
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
+                      isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                    }`}
+                  >
+                    {summary.overdue_reminders}
+                  </span>
+                )}
+              </>
+            )}
+          </NavLink>
+          <NavLink to="/reports" className={navItemClass}>
+            <span className="flex items-center gap-2.5">
+              <FileBarChart size={17} />
+              Reports
+            </span>
           </NavLink>
         </nav>
 

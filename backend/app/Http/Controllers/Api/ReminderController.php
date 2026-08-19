@@ -11,6 +11,16 @@ use Illuminate\Validation\Rule;
 
 class ReminderController extends Controller
 {
+    public function index()
+    {
+        $reminders = Reminder::query()
+            ->with('program.patient')
+            ->orderBy('next_due_at')
+            ->get();
+
+        return response()->json($reminders);
+    }
+
     public function store(Request $request, MonitoringProgram $program)
     {
         $validated = $request->validate([

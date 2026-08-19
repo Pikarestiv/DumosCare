@@ -1,15 +1,7 @@
 import { Link } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
 import { useFlaggedCheckIns } from '../lib/hooks'
-
-function describeData(structuredData) {
-  if (!structuredData) return '—'
-  if ('systolic' in structuredData) return `${structuredData.systolic}/${structuredData.diastolic} mmHg`
-  if ('taken' in structuredData) return structuredData.taken ? 'Medication taken' : 'Medication missed'
-  if (structuredData.note) return structuredData.note
-  if (structuredData.caption) return structuredData.caption
-  return '—'
-}
+import { describeCheckIn } from '../lib/checkIns'
 
 function timeAgo(dateStr) {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
@@ -57,7 +49,7 @@ export default function FlaggedCheckInsPage() {
                   {timeAgo(c.created_at)}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-slate-700">{describeData(c.structured_data)}</p>
+              <p className="mt-1 text-sm text-slate-700">{describeCheckIn(c)}</p>
               {c.flag_reason && <p className="mt-1 text-xs font-medium text-red-700">{c.flag_reason}</p>}
             </div>
           </div>

@@ -117,3 +117,24 @@ export function useFlaggedCheckIns() {
     queryFn: async () => (await api.get('/check-ins', { params: { flagged: 'true' } })).data,
   })
 }
+
+export function useCheckIns() {
+  return useQuery({
+    queryKey: ['check-ins', 'all'],
+    queryFn: async () => (await api.get('/check-ins')).data,
+  })
+}
+
+export function useAnalytics() {
+  return useQuery({
+    queryKey: ['dashboard-analytics'],
+    queryFn: async () => (await api.get('/dashboard/analytics')).data,
+  })
+}
+
+export function useReminders() {
+  return useQuery({
+    queryKey: ['reminders'],
+    queryFn: async () => (await api.get('/reminders')).data,
+  })
+}

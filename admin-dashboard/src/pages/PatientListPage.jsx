@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, Plus, UserCheck, Users } from 'lucide-react'
+import { AlertTriangle, Download, Plus, Search, UserCheck, Users } from 'lucide-react'
 import { useDashboardSummary, usePatients } from '../lib/hooks'
 import EnrollPatientModal from '../components/EnrollPatientModal'
-import { avatarColor, initials, programMeta } from '../lib/programMeta'
+import { avatarColor, initials, PROGRAM_META, programMeta } from '../lib/programMeta'
 import Sparkline from '../components/Sparkline'
+import { exportPatientsCsv } from '../lib/exportCsv'
 
 function StatTile({ icon: Icon, label, value, chip }) {
   return (
@@ -25,6 +26,22 @@ export default function PatientListPage() {
   const { data: patients, isLoading } = usePatients()
   const { data: summary } = useDashboardSummary()
   const [showEnroll, setShowEnroll] = useState(false)
+  const [search, setSearch] = useState('')
+  const [programFilter, setProgramFilter] = useState(null)
+  const [flaggedOnly, setFlaggedOnly] = useState(false)
+
+  const filteredPatients = useMemo(() => {
+    if (!patients) return patients
+    const term = search.trim().toLowerCase()
+    return patients.filter((p) => {
+      if (term && !p.name.toLowerCase().includes(term) && !p.phone.toLowerCase().includes(term)) return false
+      if (programFilter && !p.active_programs.includes(programFilter)) return false
+      if (flaggedOnly && p.flagged_count === 0) return false
+      return true
+    })
+  }, [patients, search, programFilter, flaggedOnly])
+
+  const hasActiveFilters = search.trim() !== '' || programFilter !== null || flaggedOnly
 
   return (
     <div>
@@ -33,13 +50,23 @@ export default function PatientListPage() {
           <h1 className="text-xl font-semibold text-slate-900">Patients</h1>
           <p className="text-sm text-slate-500">Everyone enrolled in a monitoring program, patients needing attention first.</p>
         </div>
-        <button
-          onClick={() => setShowEnroll(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-        >
-          <Plus size={16} />
-          Enroll patient
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => exportPatientsCsv(filteredPatients || [])}
+            disabled={!filteredPatients?.length}
+            className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+          >
+            <Download size={15} />
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowEnroll(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            <Plus size={16} />
+            Enroll patient
+          </button>
+        </div>
       </div>
 
       {summary && (
@@ -49,6 +76,47 @@ export default function PatientListPage() {
           <StatTile icon={Users} label="Overdue reminders" value={summary.overdue_reminders} chip="bg-sky-50 text-sky-600" />
         </div>
       )}
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative">
+          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or phone..."
+            className="w-64 rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          />
+        </div>
+        <button
+          onClick={() => setProgramFilter(null)}
+          className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+            programFilter === null ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          All programs
+        </button>
+        {Object.entries(PROGRAM_META).map(([type, meta]) => (
+          <button
+            key={type}
+            onClick={() => setProgramFilter(programFilter === type ? null : type)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+              programFilter === type ? meta.pill + ' ring-1 ring-inset ring-current' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {meta.shortLabel}
+          </button>
+        ))}
+        <button
+          onClick={() => setFlaggedOnly((v) => !v)}
+          className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium ${
+            flaggedOnly ? 'bg-red-100 text-red-700 ring-1 ring-inset ring-red-400' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          <AlertTriangle size={12} />
+          Flagged only
+        </button>
+      </div>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
@@ -70,7 +138,14 @@ export default function PatientListPage() {
                 </td>
               </tr>
             )}
-            {patients?.map((p) => (
+            {!isLoading && filteredPatients?.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                  {hasActiveFilters ? 'No patients match your filters.' : 'No patients enrolled yet.'}
+                </td>
+              </tr>
+            )}
+            {filteredPatients?.map((p) => (
               <tr
                 key={p.id}
                 onClick={() => navigate(`/patients/${p.id}`)}
