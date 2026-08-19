@@ -2,17 +2,8 @@ import { Link } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
 import { useFlaggedCheckIns } from '../lib/hooks'
 import { describeCheckIn } from '../lib/checkIns'
-
-function timeAgo(dateStr) {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (seconds < 60) return 'just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
+import { formatDateTime, timeAgo } from '../lib/dateFormat'
+import { CardListSkeleton } from '../components/Skeleton'
 
 export default function FlaggedCheckInsPage() {
   const { data, isLoading } = useFlaggedCheckIns()
@@ -25,8 +16,9 @@ export default function FlaggedCheckInsPage() {
         <p className="text-sm text-slate-500">Cross-patient triage view of anything out of range.</p>
       </div>
 
+      {isLoading && <CardListSkeleton />}
+
       <div className="space-y-3">
-        {isLoading && <p className="text-sm text-slate-400">Loading...</p>}
         {!isLoading && checkIns.length === 0 && (
           <p className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400 shadow-sm">
             Nothing flagged. All clear.
@@ -45,7 +37,7 @@ export default function FlaggedCheckInsPage() {
                 >
                   {c.program.patient.name}
                 </Link>
-                <span className="text-xs text-slate-500" title={new Date(c.created_at).toLocaleString()}>
+                <span className="text-xs text-slate-500" title={formatDateTime(c.created_at)}>
                   {timeAgo(c.created_at)}
                 </span>
               </div>

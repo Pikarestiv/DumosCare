@@ -5,3 +5,8 @@ body {
   font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   background-color: #f8fafc;
 }
+
+button:not(:disabled),
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}

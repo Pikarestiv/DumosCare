@@ -6,6 +6,8 @@ import EnrollPatientModal from '../components/EnrollPatientModal'
 import { avatarColor, initials, PROGRAM_META, programMeta } from '../lib/programMeta'
 import Sparkline from '../components/Sparkline'
 import { exportPatientsCsv } from '../lib/exportCsv'
+import { formatDate } from '../lib/dateFormat'
+import Skeleton from '../components/Skeleton'
 
 function StatTile({ icon: Icon, label, value, chip }) {
   return (
@@ -69,11 +71,23 @@ export default function PatientListPage() {
         </div>
       </div>
 
-      {summary && (
+      {summary ? (
         <div className="mb-6 grid grid-cols-3 gap-4">
           <StatTile icon={UserCheck} label="Active patients" value={summary.active_patients} chip="bg-emerald-50 text-emerald-600" />
           <StatTile icon={AlertTriangle} label="Flagged today" value={summary.flagged_check_ins_today} chip="bg-amber-50 text-amber-600" />
           <StatTile icon={Users} label="Overdue reminders" value={summary.overdue_reminders} chip="bg-sky-50 text-sky-600" />
+        </div>
+      ) : (
+        <div className="mb-6 grid grid-cols-3 gap-4">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center gap-2.5">
+                <Skeleton className="h-8 w-8 rounded-lg" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <Skeleton className="mt-3 h-7 w-12" />
+            </div>
+          ))}
         </div>
       )}
 
@@ -131,13 +145,32 @@ export default function PatientListPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {isLoading && (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
-                  Loading patients...
-                </td>
-              </tr>
-            )}
+            {isLoading &&
+              [0, 1, 2, 3].map((i) => (
+                <tr key={i}>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <Skeleton className="h-7 w-7 rounded-full" />
+                      <Skeleton className="h-4 w-28" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-24" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-6 w-16" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-20" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-5 w-8 rounded-full" />
+                  </td>
+                </tr>
+              ))}
             {!isLoading && filteredPatients?.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
@@ -188,7 +221,7 @@ export default function PatientListPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-slate-600">
-                  {p.last_check_in_at ? new Date(p.last_check_in_at).toLocaleDateString() : '—'}
+                  {p.last_check_in_at ? formatDate(p.last_check_in_at) : '—'}
                 </td>
                 <td className="px-4 py-3">
                   {p.flagged_count > 0 ? (

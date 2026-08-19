@@ -6,6 +6,8 @@ import BpTrendChart from '../components/BpTrendChart'
 import ReminderForm from '../components/ReminderForm'
 import { avatarColor, initials, programMeta, PROGRAM_META } from '../lib/programMeta'
 import { describeCheckIn } from '../lib/checkIns'
+import { formatDate } from '../lib/dateFormat'
+import Skeleton from '../components/Skeleton'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8123'
 const REPORT_URL = import.meta.env.VITE_PATIENT_REPORT_URL || 'http://localhost:5174'
@@ -96,7 +98,7 @@ function ProgramSection({ patient, program }) {
               <span className={c.flagged ? 'font-medium text-red-700' : 'text-slate-700'}>{describeCheckIn(c)}</span>
               <span className="text-xs text-slate-400">via {c.source}</span>
             </div>
-            <span className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</span>
+            <span className="text-xs text-slate-400">{formatDate(c.created_at)}</span>
           </div>
         ))}
       </div>
@@ -131,13 +133,39 @@ function AddProgramForm({ patientId, onDone }) {
   )
 }
 
+function PatientDetailSkeleton() {
+  return (
+    <div>
+      <Skeleton className="mb-4 h-4 w-28" />
+      <div className="mb-6 flex items-center gap-3">
+        <Skeleton className="h-11 w-11 rounded-full" />
+        <div>
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="mt-2 h-3.5 w-28" />
+        </div>
+      </div>
+      <div className="space-y-4">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-9 w-9 rounded-lg" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="mt-4 h-40 w-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function PatientDetailPage() {
   const { id } = useParams()
   const { data: patient, isLoading } = usePatient(id)
   const [showAddProgram, setShowAddProgram] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  if (isLoading) return <p className="text-sm text-slate-400">Loading...</p>
+  if (isLoading) return <PatientDetailSkeleton />
   if (!patient) return <p className="text-sm text-slate-400">Patient not found.</p>
 
   const reportUrl = `${REPORT_URL}/report/${patient.report_token}`

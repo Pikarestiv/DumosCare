@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import { Bell, Clock } from 'lucide-react'
 import { useReminders } from '../lib/hooks'
 import { programMeta } from '../lib/programMeta'
+import { formatDateTime } from '../lib/dateFormat'
+import { CardListSkeleton } from '../components/Skeleton'
 
 const FREQUENCY_LABELS = {
   daily: 'Daily',
@@ -23,7 +25,7 @@ export default function RemindersPage() {
         <p className="text-sm text-slate-500">Every scheduled reminder across all patients.</p>
       </div>
 
-      {isLoading && <p className="text-sm text-slate-400">Loading...</p>}
+      {isLoading && <CardListSkeleton />}
 
       {!isLoading && reminders?.length === 0 && (
         <p className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400 shadow-sm">
@@ -81,7 +83,7 @@ function ReminderRow({ reminder, overdue }) {
           )}
           <span className={`flex items-center gap-1 text-xs font-medium ${overdue ? 'text-red-600' : 'text-slate-500'}`}>
             <Clock size={12} />
-            {new Date(reminder.next_due_at).toLocaleString()}
+            {formatDateTime(reminder.next_due_at)}
           </span>
         </div>
         <p className="mt-1 text-sm text-slate-700">{reminder.message_template}</p>

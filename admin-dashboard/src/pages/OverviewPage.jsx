@@ -1,12 +1,44 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useAnalytics } from '../lib/hooks'
 import { programMeta } from '../lib/programMeta'
+import Skeleton from '../components/Skeleton'
+
+function OverviewSkeleton() {
+  return (
+    <div>
+      <div className="mb-6">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="mt-2 h-4 w-64" />
+      </div>
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="mt-3 h-7 w-12" />
+          </div>
+        ))}
+      </div>
+      <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <Skeleton className="mb-3 h-4 w-40" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <Skeleton className="mb-3 h-4 w-40" />
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-5 w-full" />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function OverviewPage() {
   const { data, isLoading } = useAnalytics()
 
   if (isLoading || !data) {
-    return <p className="text-sm text-slate-400">Loading...</p>
+    return <OverviewSkeleton />
   }
 
   const chartData = data.daily_check_ins.map((d) => ({
